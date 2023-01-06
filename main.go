@@ -13,6 +13,13 @@ const (
 	originDir = "origin"
 )
 
+
+type File string
+
+func (f File) Writer (p []byte) (n int, err error) {
+	return len(f), nil
+}
+
 func main() {
 	// dirの作成
 	desiredDir := os.Args[1]
@@ -20,7 +27,7 @@ func main() {
 	currentDir, _ := os.Getwd()
 
 	createdDirPath, ok := makeDir(desiredDir, currentDir)
-	fmt.Printf("dirを作成しました %s", createdDirPath)
+	fmt.Printf("dirを作成しました %s\n", createdDirPath)
 	if ok != nil {
 		log.Fatal(ok)
 	}
@@ -38,10 +45,7 @@ func main() {
 }
 
 func makeDir(dirName, currentDir string) (string, error) {
-	isString := interface{}(dirName)
-
 	fullPath := currentDir +  "/" + dirName
-	fmt.Println(fullPath)
 	//すでにdirがあるか確認
 	_, err := os.Stat(fullPath)
 	if !os.IsNotExist(err) {
@@ -49,10 +53,13 @@ func makeDir(dirName, currentDir string) (string, error) {
 		return dirName, nil
 	}
 
+	//型のチェック
+	isString := interface{}(dirName)
 	if _, ok := isString.(string); !ok {
 		log.Fatal("第一引数は文字列を入力してください")
 	}
 
+	//空文字かどうか
 	if dirName == "" {
 		log.Fatal("作成するディレクトリ名を入力してください")
 	}
@@ -70,13 +77,25 @@ func readOriginFile(dirName string) ([]fs.FileInfo, error) {
 	return files, nil
 }
 
-//  copyに変更したい。
 func makeFile(fileName, path string) error {
-	filepath := path + "/" + fileName
-	io.Copy()
-		_, err := os.Create(filepath)
-		if err != nil {
-			panic(err)
-		}
+	filePath := path + "/" + fileName
+
+	_, isFile := os.Open(filePath)
+	if os.IsExist(isFile) {
+		return nil
+	}
+
+	writer, err := os.Create(filePath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	
+	reader, err := os.Open(originDir + "/" + fileName)
+	
+	_, ok := io.Copy(writer, reader)
+	if ok != nil {
+		log.Fatal(err)
+	}
+
 	return nil
 } 
