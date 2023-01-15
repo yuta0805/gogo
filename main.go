@@ -2,13 +2,10 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 
-	"gogo/libs"
+	"gogo/command"
 )
-
-
 
 type File string
 
@@ -17,26 +14,8 @@ func (f File) Writer (p []byte) (n int, err error) {
 }
 
 func main() {
-	// dirの作成
-	desiredDir := os.Args[1]
-	// 現在のcurrent dirを取得
-	currentDir, _ := os.Getwd()
-
-	createdDirPath, ok := libs.MakeDir(desiredDir, currentDir)
-	fmt.Printf("dirを作成しました %s\n", createdDirPath)
-	if ok != nil {
-		log.Fatal(ok)
-	}
-
-	//origin dir配下のterraformファイル情報を取得
-	files, isFiles := libs.ReadOriginFile(libs.OriginDir)
-	if isFiles != nil {
-		isFiles.Error()
-		log.Fatal("ファイル読み込みに失敗しました")
-	}
-
-	// fileの生成
-	for _, file := range files {
-		libs.MakeFile(file.Name(), createdDirPath)
+	if err := command.RootCmd.Execute() ; err != nil {
+		fmt.Fprintf(os.Stderr, "%s: %v\n", os.Args[0], err)
+		os.Exit(1)
 	}
 }
