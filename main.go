@@ -31,6 +31,7 @@ func main() {
 	//origin dir配下のterraformファイル情報を取得
 	files, isFiles := libs.ReadOriginFile(libs.OriginDir)
 	if isFiles != nil {
+		isFiles.Error()
 		log.Fatal("ファイル読み込みに失敗しました")
 	}
 

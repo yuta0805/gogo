@@ -1,6 +1,7 @@
 package libs
 
 import (
+	"fmt"
 	"io"
 	"io/fs"
 	"io/ioutil"
@@ -11,6 +12,15 @@ import (
 const (
 	OriginDir = "origin"
 )
+
+type makeFileError struct {
+	s string
+	Err error
+}
+
+func (m *makeFileError) Error() string {
+	return fmt.Sprintf("message: %s %s\n", m.s, m.Err.Error())
+}
 
 func MakeDir(dirName, currentDir string) (string, error) {
 	fullPath := currentDir +  "/" + dirName
@@ -25,11 +35,13 @@ func MakeDir(dirName, currentDir string) (string, error) {
 	isString := interface{}(dirName)
 	if _, ok := isString.(string); !ok {
 		log.Fatal("第一引数は文字列を入力してください")
+		os.Exit(1)
 	}
 
 	//空文字かどうか
 	if dirName == "" {
 		log.Fatal("作成するディレクトリ名を入力してください")
+		os.Exit(1)
 	}
 
 	err = os.Mkdir(fullPath, 0755)
@@ -40,6 +52,7 @@ func ReadOriginFile(dirName string) ([]fs.FileInfo, error) {
 	files, err := ioutil.ReadDir(dirName)
 	if err != nil {
 		log.Fatal("empty something in dir")
+		os.Exit(1)
 	}
 
 	return files, nil
